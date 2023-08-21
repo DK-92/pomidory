@@ -1,6 +1,7 @@
 package main_view
 
 import (
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -18,8 +19,11 @@ import (
 var (
 	window fyne.Window
 
-	timerText *canvas.Text
-	vbox      *fyne.Container
+	timerText        *canvas.Text
+	intentionInput   *widget.Entry
+	startTimerButton *widget.Button
+	stopTimerButton  *widget.Button
+	vbox             *fyne.Container
 
 	menu          *fyne.Menu
 	menuRemainder *fyne.MenuItem
@@ -36,7 +40,7 @@ func CreateAndShowMainView() {
 	vbox = container.New(
 		layout.NewVBoxLayout(),
 		createIntentionInput(),
-		createTimerText("25:00"),
+		createTimerText(pomodoroTimer.TimerLength()),
 		createStartTimerButton(),
 	)
 
@@ -54,7 +58,7 @@ func CreateAndShowMainView() {
 
 func createSystemTrayMenu() {
 	app := view.GetAppInstance()
-	menuRemainder = fyne.NewMenuItem("Time left: 25:00", nil)
+	menuRemainder = fyne.NewMenuItem("Timer not started", nil)
 
 	if desk, isDesktop := app.(desktop.App); isDesktop {
 		menu = fyne.NewMenu("Pomidory",
@@ -69,30 +73,30 @@ func createSystemTrayMenu() {
 }
 
 func createIntentionInput() *widget.Entry {
-	input := widget.NewEntry()
-	input.SetPlaceHolder("Task at hand")
+	intentionInput = widget.NewEntry()
+	intentionInput.SetPlaceHolder("Task at hand")
 
-	return input
+	return intentionInput
 }
 
 func createStartTimerButton() *fyne.Container {
-	startTimerButton := widget.NewButton("Start session", func() {
+	startTimerButton = widget.NewButton("Start session", func() {
 		pomodoroTimer.StartAfter(func() {
 			work_break_view.CreateAndShowWorkBreakView()
 		})
 
-		updateTimerText(pomodoroTimer.Remainder())
+		intentionInput.Disable()
 
 		// Update the time element on the UI
 		go func() {
-			for range time.Tick(980 * time.Millisecond) {
+			for range time.Tick(970 * time.Millisecond) {
 				if pomodoroTimer.HasEnded() {
 					return
 				}
 
 				remainder := pomodoroTimer.Remainder()
 				updateTimerText(remainder)
-				updateMenuItemTimerText(remainder)
+				updateMenuItemTimerText(fmt.Sprintf("Time left: %s", remainder))
 			}
 		}()
 

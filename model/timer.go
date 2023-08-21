@@ -26,6 +26,10 @@ func GetInstance() *PomodoroTimer {
 	return instance
 }
 
+func (t *PomodoroTimer) TimerLength() string {
+	return fmt.Sprintf("%02d:00", t.Length)
+}
+
 func (t *PomodoroTimer) StartAfter(runAfter func()) {
 	t.running = time.AfterFunc(time.Duration(t.Length)*time.Minute, runAfter)
 	t.start = time.Now()
@@ -33,7 +37,7 @@ func (t *PomodoroTimer) StartAfter(runAfter func()) {
 }
 
 func (t *PomodoroTimer) Remainder() string {
-	difference := t.end.Sub(time.Now())
+	difference := t.end.Sub(time.Now()).Round(time.Second)
 
 	total := int(difference.Seconds())
 	minutes := int(total/60) % 60
