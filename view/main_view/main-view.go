@@ -2,6 +2,7 @@ package main_view
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
@@ -15,6 +16,8 @@ import (
 )
 
 var (
+	window fyne.Window
+
 	timerText *canvas.Text
 	vbox      *fyne.Container
 
@@ -25,37 +28,36 @@ var (
 )
 
 func CreateAndShowMainView() {
-	app := view.GetAppInstance()
-	window := app.NewWindow("Pomidory")
-	createSystemTrayMenu(window)
+	app := app.New()
+	window = app.NewWindow("Pomidory")
+	createSystemTrayMenu()
 
 	vbox = container.New(
 		layout.NewVBoxLayout(),
 		createIntentionInput(),
 		createTimerText("25:00"),
-		createStartTimerButton(window),
+		createStartTimerButton(),
 	)
 
 	window.SetContent(vbox)
 	window.Resize(fyne.NewSize(120, 120))
 	window.SetFixedSize(true)
 	window.CenterOnScreen()
-	window.ShowAndRun()
 
 	window.SetCloseIntercept(func() {
 		window.Hide()
 	})
+
+	window.ShowAndRun()
 }
 
-func createSystemTrayMenu(window fyne.Window) {
+func createSystemTrayMenu() {
 	app := view.GetAppInstance()
-
 	menuRemainder = fyne.NewMenuItem("Time left: 25:00", func() {})
 
 	if desk, isDesktop := app.(desktop.App); isDesktop {
 		menu = fyne.NewMenu("Pomidory",
 			fyne.NewMenuItem("Show", func() {
-				println("Opening main window")
 				window.Show()
 			}),
 			fyne.NewMenuItemSeparator(),
@@ -72,7 +74,7 @@ func createIntentionInput() *widget.Entry {
 	return input
 }
 
-func createStartTimerButton(window fyne.Window) *fyne.Container {
+func createStartTimerButton() *fyne.Container {
 	startTimerButton := widget.NewButton("Start session", func() {
 
 		updateTimerText(pomodoroTimer.Remainder())
