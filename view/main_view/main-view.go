@@ -28,10 +28,14 @@ var (
 	menuRemainder *fyne.MenuItem
 
 	pomodoroTimer *model.PomodoroTimer
+	channel       chan view.StateChannel
 )
 
 func CreateAndShowMainView() {
 	pomodoroTimer = model.GetInstance()
+	channel = make(chan view.StateChannel)
+	go listenForWorkBreak()
+
 	app := view.GetAppInstance()
 	window = app.NewWindow("Pomidory")
 	createSystemTrayMenu()
@@ -53,6 +57,13 @@ func CreateAndShowMainView() {
 	})
 
 	window.ShowAndRun()
+}
+
+func listenForWorkBreak() {
+	for {
+		value := <-channel
+		fmt.Println(value)
+	}
 }
 
 func createSystemTrayMenu() {
@@ -85,7 +96,7 @@ func createStartTimerButton() *fyne.Container {
 
 	startTimerButton := widget.NewButton("Start session", func() {
 		pomodoroTimer.StartAfter(func() {
-			work_break_view.CreateAndShowWorkBreakView()
+			work_break_view.CreateAndShowWorkBreakView(channel)
 		})
 
 		// Remove the 3rd item from layout (start timer button)
@@ -97,8 +108,9 @@ func createStartTimerButton() *fyne.Container {
 
 		// Update the time element on the UI
 		go func() {
-			for range time.Tick(970 * time.Millisecond) {
+			for range time.Tick(60 * time.Millisecond) {
 				if pomodoroTimer.HasEnded() {
+					addStartButtonContainer()
 					return
 				}
 
@@ -133,9 +145,7 @@ func createStopTimerButton() *fyne.Container {
 	stopTimerButton := widget.NewButton("Stop session", func() {
 		pomodoroTimer.Stop()
 		intentionInput.Enable()
-
-		vbox.Objects = vbox.Objects[:2]
-		vbox.Add(startTimerButtonContainer)
+		addStartButtonContainer()
 	})
 
 	stopTimerButtonContainer = container.New(
@@ -146,6 +156,11 @@ func createStopTimerButton() *fyne.Container {
 	)
 
 	return stopTimerButtonContainer
+}
+
+func addStartButtonContainer() {
+	vbox.Objects = vbox.Objects[:2]
+	vbox.Add(startTimerButtonContainer)
 }
 
 func createTimerText(text string) *canvas.Text {

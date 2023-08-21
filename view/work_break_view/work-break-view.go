@@ -8,7 +8,7 @@ import (
 	"github.com/DK-92/pomidory/view"
 )
 
-func CreateAndShowWorkBreakView() {
+func CreateAndShowWorkBreakView(channel chan<- view.StateChannel) {
 	app := view.GetAppInstance()
 	window := app.NewWindow("Work break")
 
@@ -23,6 +23,8 @@ func CreateAndShowWorkBreakView() {
 	window.SetFixedSize(true)
 	window.CenterOnScreen()
 	window.Show()
+
+	channel <- view.WorkBreakState
 }
 
 func createButtons(window fyne.Window) *fyne.Container {

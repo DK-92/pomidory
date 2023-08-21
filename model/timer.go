@@ -29,7 +29,8 @@ func GetInstance() *PomodoroTimer {
 }
 
 func (t *PomodoroTimer) TimerLength() string {
-	return fmt.Sprintf("%02d:00", t.Length)
+	t.end = time.Now().Add(time.Duration(t.Length) * LengthType)
+	return t.Remainder()
 }
 
 func (t *PomodoroTimer) StartAfter(runAfter func()) {
