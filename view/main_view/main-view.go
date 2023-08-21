@@ -100,7 +100,6 @@ func createStartTimerButton() *fyne.Container {
 		go func() {
 			for range time.Tick(970 * time.Millisecond) {
 				if pomodoroTimer.HasEnded() {
-					println(pomodoroTimer.HasEnded())
 					return
 				}
 
