@@ -24,10 +24,11 @@ var (
 	menu          *fyne.Menu
 	menuRemainder *fyne.MenuItem
 
-	pomodoroTimer = model.GetInstance()
+	pomodoroTimer *model.PomodoroTimer
 )
 
 func CreateAndShowMainView() {
+	pomodoroTimer = model.GetInstance()
 	app := app.New()
 	window = app.NewWindow("Pomidory")
 	createSystemTrayMenu()
@@ -53,7 +54,7 @@ func CreateAndShowMainView() {
 
 func createSystemTrayMenu() {
 	app := view.GetAppInstance()
-	menuRemainder = fyne.NewMenuItem("Time left: 25:00", func() {})
+	menuRemainder = fyne.NewMenuItem("Time left: 25:00", nil)
 
 	if desk, isDesktop := app.(desktop.App); isDesktop {
 		menu = fyne.NewMenu("Pomidory",
@@ -61,7 +62,7 @@ func createSystemTrayMenu() {
 				window.Show()
 			}),
 			fyne.NewMenuItemSeparator(),
-			fyne.NewMenuItem("Time left: 25:00", func() {}),
+			menuRemainder,
 		)
 		desk.SetSystemTrayMenu(menu)
 	}
@@ -76,23 +77,30 @@ func createIntentionInput() *widget.Entry {
 
 func createStartTimerButton() *fyne.Container {
 	startTimerButton := widget.NewButton("Start session", func() {
-
-		updateTimerText(pomodoroTimer.Remainder())
-
-		go func() {
-			for pomodoroTimer.HasNotEnded() {
-				remainder := pomodoroTimer.Remainder()
-				updateTimerText(remainder)
-				go updateMenuItemTimerText(remainder)
-				time.Sleep(980 * time.Millisecond)
-			}
-		}()
-
-		pomodoroTimer.Start(func() {
+		pomodoroTimer.StartAfter(func() {
 			work_break_view.CreateAndShowWorkBreakView()
 		})
 
-		window.Hide()
+		updateTimerText(pomodoroTimer.Remainder())
+
+		// Update the time element on the UI
+		go func() {
+			for range time.Tick(980 * time.Millisecond) {
+				if pomodoroTimer.HasEnded() {
+					return
+				}
+
+				remainder := pomodoroTimer.Remainder()
+				updateTimerText(remainder)
+				updateMenuItemTimerText(remainder)
+			}
+		}()
+
+		// Close after 2 seconds, so the user sees the timer has started
+		go func() {
+			time.Sleep(2 * time.Second)
+			window.Hide()
+		}()
 	})
 
 	return container.New(

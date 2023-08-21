@@ -26,7 +26,7 @@ func GetInstance() *PomodoroTimer {
 	return instance
 }
 
-func (t *PomodoroTimer) Start(runAfter func()) {
+func (t *PomodoroTimer) StartAfter(runAfter func()) {
 	t.running = time.AfterFunc(time.Duration(t.Length)*time.Minute, runAfter)
 	t.start = time.Now()
 	t.end = time.Now().Add(time.Duration(t.Length) * time.Minute)
@@ -42,6 +42,6 @@ func (t *PomodoroTimer) Remainder() string {
 	return fmt.Sprintf("%02d:%02d", minutes, seconds)
 }
 
-func (t *PomodoroTimer) HasNotEnded() bool {
-	return t.end.After(time.Now())
+func (t *PomodoroTimer) HasEnded() bool {
+	return time.Now().After(t.end)
 }
