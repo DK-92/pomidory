@@ -11,6 +11,8 @@ var (
 	instance *PomodoroTimer
 )
 
+const LengthType = time.Second
+
 type PomodoroTimer struct {
 	Length  int64
 	running *time.Timer
@@ -31,9 +33,9 @@ func (t *PomodoroTimer) TimerLength() string {
 }
 
 func (t *PomodoroTimer) StartAfter(runAfter func()) {
-	t.running = time.AfterFunc(time.Duration(t.Length)*time.Minute, runAfter)
+	t.running = time.AfterFunc(time.Duration(t.Length)*LengthType, runAfter)
 	t.start = time.Now()
-	t.end = time.Now().Add(time.Duration(t.Length) * time.Minute)
+	t.end = time.Now().Add(time.Duration(t.Length) * LengthType)
 }
 
 func (t *PomodoroTimer) Remainder() string {
@@ -48,4 +50,9 @@ func (t *PomodoroTimer) Remainder() string {
 
 func (t *PomodoroTimer) HasEnded() bool {
 	return time.Now().After(t.end)
+}
+
+func (t *PomodoroTimer) Stop() {
+	t.end = time.UnixMilli(0)
+	t.running.Stop()
 }

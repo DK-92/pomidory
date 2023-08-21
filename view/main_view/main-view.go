@@ -19,11 +19,11 @@ import (
 var (
 	window fyne.Window
 
-	timerText        *canvas.Text
-	intentionInput   *widget.Entry
-	startTimerButton *widget.Button
-	stopTimerButton  *widget.Button
-	vbox             *fyne.Container
+	timerText                 *canvas.Text
+	intentionInput            *widget.Entry
+	startTimerButtonContainer *fyne.Container
+	stopTimerButtonContainer  *fyne.Container
+	vbox                      *fyne.Container
 
 	menu          *fyne.Menu
 	menuRemainder *fyne.MenuItem
@@ -80,17 +80,27 @@ func createIntentionInput() *widget.Entry {
 }
 
 func createStartTimerButton() *fyne.Container {
-	startTimerButton = widget.NewButton("Start session", func() {
+	if startTimerButtonContainer != nil {
+		return startTimerButtonContainer
+	}
+
+	startTimerButton := widget.NewButton("Start session", func() {
 		pomodoroTimer.StartAfter(func() {
 			work_break_view.CreateAndShowWorkBreakView()
 		})
 
+		// Remove the 3rd item from layout (start timer button)
+		vbox.Objects = vbox.Objects[:2]
+		vbox.Add(createStopTimerButton())
+
 		intentionInput.Disable()
+		updateTimerText(pomodoroTimer.Remainder())
 
 		// Update the time element on the UI
 		go func() {
 			for range time.Tick(970 * time.Millisecond) {
 				if pomodoroTimer.HasEnded() {
+					println(pomodoroTimer.HasEnded())
 					return
 				}
 
@@ -101,18 +111,43 @@ func createStartTimerButton() *fyne.Container {
 		}()
 
 		// Close after 2 seconds, so the user sees the timer has started
-		go func() {
-			time.Sleep(2 * time.Second)
-			window.Hide()
-		}()
+		//go func() {
+		//	time.Sleep(2 * time.Second)
+		//	window.Hide()
+		//}()
 	})
 
-	return container.New(
+	startTimerButtonContainer = container.New(
 		layout.NewGridLayout(3),
 		layout.NewSpacer(),
 		startTimerButton,
 		layout.NewSpacer(),
 	)
+
+	return startTimerButtonContainer
+}
+
+func createStopTimerButton() *fyne.Container {
+	if stopTimerButtonContainer != nil {
+		return stopTimerButtonContainer
+	}
+
+	stopTimerButton := widget.NewButton("Stop session", func() {
+		pomodoroTimer.Stop()
+		intentionInput.Enable()
+
+		vbox.Objects = vbox.Objects[:2]
+		vbox.Add(startTimerButtonContainer)
+	})
+
+	stopTimerButtonContainer = container.New(
+		layout.NewGridLayout(3),
+		layout.NewSpacer(),
+		stopTimerButton,
+		layout.NewSpacer(),
+	)
+
+	return stopTimerButtonContainer
 }
 
 func createTimerText(text string) *canvas.Text {
