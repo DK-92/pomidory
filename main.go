@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/DK-92/pomidory/view/main_view"
+)
+
 func main() {
-	println("works")
+	main_view.CreateAndShowMainView()
 }
