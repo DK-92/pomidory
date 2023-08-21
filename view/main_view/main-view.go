@@ -3,7 +3,6 @@ package main_view
 import (
 	"fmt"
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
@@ -33,7 +32,7 @@ var (
 
 func CreateAndShowMainView() {
 	pomodoroTimer = model.GetInstance()
-	app := app.New()
+	app := view.GetAppInstance()
 	window = app.NewWindow("Pomidory")
 	createSystemTrayMenu()
 

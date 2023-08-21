@@ -10,7 +10,7 @@ import (
 
 func CreateAndShowWorkBreakView() {
 	app := view.GetAppInstance()
-	window := app.NewWindow("Pomidory2")
+	window := app.NewWindow("Work break")
 
 	vbox := container.New(
 		layout.NewVBoxLayout(),
