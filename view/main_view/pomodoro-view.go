@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/DK-92/pomidory/view/work_break_view"
 	"time"
@@ -16,6 +17,7 @@ func createInitialPomodoroView() {
 	if vbox == nil {
 		vbox = container.New(
 			layout.NewVBoxLayout(),
+			createToolbar(),
 			createOrSetIntentionInput(),
 			createOrUpdateTimerText(pomodoroTimer.TimerLength()),
 			createOrSetStartTimerButton(),
@@ -28,6 +30,16 @@ func createInitialPomodoroView() {
 	intentionInput.Text = ""
 	intentionInput.Enable()
 	vbox.Refresh()
+}
+
+func createToolbar() *widget.Toolbar {
+	return widget.NewToolbar(
+		widget.NewToolbarAction(theme.SettingsIcon(), nil),
+		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.HistoryIcon(), nil),
+		widget.NewToolbarAction(theme.DocumentSaveIcon(), nil),
+		widget.NewToolbarAction(theme.HelpIcon(), nil),
+	)
 }
 
 func createOrSetIntentionInput() *widget.Entry {
