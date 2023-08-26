@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const hideWindowAfterStartTimerSeconds = 2 * time.Second
+
 func createInitialPomodoroView() {
 	if vbox == nil {
 		vbox = container.New(
@@ -20,7 +22,7 @@ func createInitialPomodoroView() {
 		)
 	}
 
-	pomodoroTimer.Length = 4 * time.Second
+	pomodoroTimer.Length = globalSettings.PomodoroLength
 	createOrUpdateTimerText(pomodoroTimer.TimerLength())
 
 	intentionInput.Text = ""
@@ -59,7 +61,7 @@ func createOrSetStartTimerButton() *fyne.Container {
 			for range time.Tick(60 * time.Millisecond) {
 				if pomodoroTimer.HasEnded() {
 					addStartButtonToContainer()
-					println("STOP")
+
 					return
 				}
 
@@ -70,10 +72,12 @@ func createOrSetStartTimerButton() *fyne.Container {
 		}()
 
 		// Close after 2 seconds, so the user sees the timer has started
-		//go func() {
-		//	time.Sleep(2 * time.Second)
-		//	window.Hide()
-		//}()
+		if globalSettings.MinimizeAfterStart {
+			go func() {
+				time.Sleep(hideWindowAfterStartTimerSeconds)
+				pomodoroWindow.Hide()
+			}()
+		}
 	})
 
 	startTimerButtonContainer = container.New(

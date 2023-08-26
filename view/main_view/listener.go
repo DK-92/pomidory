@@ -10,10 +10,11 @@ func listenOnStateChannel() {
 		value := <-channel
 
 		switch value {
-		case view.PomodoroState:
 		case view.WorkBreakState:
 			pomodoroTimer.Stop()
-			pomodoroTimer.Length = 6 * time.Second
+			pomodoroTimer.Length = globalSettings.BreakLength
+			pomodoroWindow.Show()
+
 			pomodoroTimer.StartAfter(func() {
 				time.Sleep(100 * time.Millisecond)
 				createInitialPomodoroView()
