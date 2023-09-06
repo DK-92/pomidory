@@ -8,9 +8,11 @@ import (
 	"github.com/DK-92/pomidory/view"
 )
 
+const windowTitle = "Work break"
+
 func CreateAndShowWorkBreakView(channel chan<- view.StateChannel) {
 	app := view.GetAppInstance()
-	window := app.NewWindow("Work break")
+	window := app.NewWindow(windowTitle)
 
 	vbox := container.New(
 		layout.NewVBoxLayout(),

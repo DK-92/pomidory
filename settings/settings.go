@@ -13,6 +13,8 @@ var (
 	instance *Settings
 )
 
+const filename = "settings.json"
+
 type Settings struct {
 	PomodoroLength     time.Duration `json:"pomodoroLength"`
 	BreakLength        time.Duration `json:"breakLength"`
@@ -27,6 +29,21 @@ func GetInstance() *Settings {
 	return instance
 }
 
+func (s *Settings) Save() {
+	c := &Settings{
+		PomodoroLength:     instance.PomodoroLength / time.Minute,
+		BreakLength:        instance.BreakLength / time.Minute,
+		MinimizeAfterStart: instance.MinimizeAfterStart,
+	}
+
+	buffer, _ := json.Marshal(c)
+
+	err := os.WriteFile(filename, buffer, 0644)
+	if err != nil {
+		log.Println("Error saving settings file: ", err)
+	}
+}
+
 func loadSettings() *Settings {
 	settings := &Settings{
 		PomodoroLength:     25 * time.Minute,
@@ -34,9 +51,9 @@ func loadSettings() *Settings {
 		MinimizeAfterStart: true,
 	}
 
-	buffer, err := os.ReadFile("settings.json")
+	buffer, err := os.ReadFile(filename)
 	if err != nil {
-		log.Println("Error opening settings.json: ", err)
+		log.Println("Error opening settings file: ", err)
 		return settings
 	}
 

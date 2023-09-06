@@ -7,11 +7,15 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/DK-92/pomidory/view/settings_view"
 	"github.com/DK-92/pomidory/view/work_break_view"
 	"time"
 )
 
-const hideWindowAfterStartTimerSeconds = 2 * time.Second
+const (
+	hideWindowAfterStartTimerSeconds = 2 * time.Second
+	buttonPositionInVbox             = 3
+)
 
 func createInitialPomodoroView() {
 	if vbox == nil {
@@ -34,7 +38,7 @@ func createInitialPomodoroView() {
 
 func createToolbar() *widget.Toolbar {
 	return widget.NewToolbar(
-		widget.NewToolbarAction(theme.SettingsIcon(), nil),
+		widget.NewToolbarAction(theme.SettingsIcon(), settings_view.CreateAndShowSettingsView),
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.HistoryIcon(), nil),
 		widget.NewToolbarAction(theme.DocumentSaveIcon(), nil),
@@ -62,7 +66,7 @@ func createOrSetStartTimerButton() *fyne.Container {
 		})
 
 		// Remove the 3rd item from layout (start timer button)
-		vbox.Objects = vbox.Objects[:2]
+		vbox.Objects = vbox.Objects[:buttonPositionInVbox]
 		vbox.Add(createOrSetStopTimerButton())
 
 		intentionInput.Disable()
@@ -73,7 +77,6 @@ func createOrSetStartTimerButton() *fyne.Container {
 			for range time.Tick(60 * time.Millisecond) {
 				if pomodoroTimer.HasEnded() {
 					addStartButtonToContainer()
-
 					return
 				}
 
@@ -124,6 +127,6 @@ func createOrSetStopTimerButton() *fyne.Container {
 }
 
 func addStartButtonToContainer() {
-	vbox.Objects = vbox.Objects[:2]
+	vbox.Objects = vbox.Objects[:buttonPositionInVbox]
 	vbox.Add(startTimerButtonContainer)
 }

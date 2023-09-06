@@ -11,6 +11,8 @@ import (
 	"image/color"
 )
 
+const windowTitle = "Pomidory"
+
 var (
 	pomodoroWindow fyne.Window
 
@@ -36,7 +38,7 @@ func CreateAndShowMainView() {
 	go listenOnStateChannel()
 
 	app := view.GetAppInstance()
-	pomodoroWindow = app.NewWindow("Pomidory")
+	pomodoroWindow = app.NewWindow(windowTitle)
 	createSystemTrayMenu()
 	createInitialPomodoroView()
 
