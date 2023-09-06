@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/DK-92/pomidory/view"
 	"github.com/DK-92/pomidory/view/settings_view"
 	"github.com/DK-92/pomidory/view/work_break_view"
 	"time"
@@ -16,6 +17,8 @@ const (
 	hideWindowAfterStartTimerSeconds = 2 * time.Second
 	buttonPositionInVbox             = 3
 )
+
+var timerState int8
 
 func createInitialPomodoroView() {
 	if vbox == nil {
@@ -60,40 +63,7 @@ func createOrSetStartTimerButton() *fyne.Container {
 		return startTimerButtonContainer
 	}
 
-	startTimerButton := widget.NewButton("Start session", func() {
-		pomodoroTimer.StartAfter(func() {
-			work_break_view.CreateAndShowWorkBreakView(channel)
-		})
-
-		// Remove the 3rd item from layout (start timer button)
-		vbox.Objects = vbox.Objects[:buttonPositionInVbox]
-		vbox.Add(createOrSetStopTimerButton())
-
-		intentionInput.Disable()
-		createOrUpdateTimerText(pomodoroTimer.Remainder())
-
-		// Update the time element on the UI
-		go func() {
-			for range time.Tick(60 * time.Millisecond) {
-				if pomodoroTimer.HasEnded() {
-					addStartButtonToContainer()
-					return
-				}
-
-				remainder := pomodoroTimer.Remainder()
-				createOrUpdateTimerText(remainder)
-				updateMenuItemTimerText(fmt.Sprintf("Time left: %s", remainder))
-			}
-		}()
-
-		// Close after 2 seconds, so the user sees the timer has started
-		if globalSettings.MinimizeAfterStart {
-			go func() {
-				time.Sleep(hideWindowAfterStartTimerSeconds)
-				pomodoroWindow.Hide()
-			}()
-		}
-	})
+	startTimerButton := widget.NewButton("Start session", startTimer)
 
 	startTimerButtonContainer = container.New(
 		layout.NewGridLayout(3),
@@ -129,4 +99,44 @@ func createOrSetStopTimerButton() *fyne.Container {
 func addStartButtonToContainer() {
 	vbox.Objects = vbox.Objects[:buttonPositionInVbox]
 	vbox.Add(startTimerButtonContainer)
+}
+
+func startTimer() {
+	pomodoroTimer.StartAfter(func() {
+		switch timerState {
+		case view.PomodoroState:
+			work_break_view.CreateAndShowWorkBreakView(stateChannel)
+		case view.WorkBreakState:
+			stateChannel <- view.PomodoroState
+		}
+	})
+
+	// Remove the 3rd item from layout (start timer button)
+	vbox.Objects = vbox.Objects[:buttonPositionInVbox]
+	vbox.Add(createOrSetStopTimerButton())
+
+	intentionInput.Disable()
+	createOrUpdateTimerText(pomodoroTimer.Remainder())
+
+	// Update the time element on the UI
+	go func() {
+		for range time.Tick(60 * time.Millisecond) {
+			if pomodoroTimer.HasEnded() {
+				addStartButtonToContainer()
+				return
+			}
+
+			remainder := pomodoroTimer.Remainder()
+			createOrUpdateTimerText(remainder)
+			updateMenuItemTimerText(fmt.Sprintf("Time left: %s", remainder))
+		}
+	}()
+
+	// Close after 2 seconds, so the user sees the timer has started
+	if globalSettings.MinimizeAfterStart {
+		go func() {
+			time.Sleep(hideWindowAfterStartTimerSeconds)
+			pomodoroWindow.Hide()
+		}()
+	}
 }

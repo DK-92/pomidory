@@ -7,18 +7,30 @@ import (
 
 func listenOnStateChannel() {
 	for {
-		value := <-channel
+		value := <-stateChannel
 
 		switch value {
+		case view.PomodoroState:
+			timerState = view.PomodoroState
+			pomodoroTimer.Stop()
+
+			sleep()
+			createInitialPomodoroView()
+
+			pomodoroWindow.Show()
 		case view.WorkBreakState:
+			timerState = view.WorkBreakState
+
 			pomodoroTimer.Stop()
 			pomodoroTimer.Length = globalSettings.BreakLength
-			pomodoroWindow.Show()
+			sleep()
 
-			pomodoroTimer.StartAfter(func() {
-				time.Sleep(100 * time.Millisecond)
-				createInitialPomodoroView()
-			})
+			startTimer()
+			pomodoroWindow.Show()
 		}
 	}
+}
+
+func sleep() {
+	time.Sleep(120 * time.Millisecond)
 }

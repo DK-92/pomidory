@@ -27,14 +27,14 @@ var (
 
 	pomodoroTimer  *pomodoro.PomodoroTimer
 	globalSettings *settings.Settings
-	channel        chan view.StateChannel
+	stateChannel   chan view.StateChannel
 )
 
 func CreateAndShowMainView() {
 	pomodoroTimer = pomodoro.GetInstance()
 	globalSettings = settings.GetInstance()
 
-	channel = make(chan view.StateChannel)
+	stateChannel = make(chan view.StateChannel)
 	go listenOnStateChannel()
 
 	app := view.GetAppInstance()
