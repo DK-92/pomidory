@@ -24,7 +24,10 @@ type PomodoroTimer struct {
 
 func GetInstance() *PomodoroTimer {
 	once.Do(func() {
-		instance = &PomodoroTimer{Length: 1 * time.Second}
+		instance = &PomodoroTimer{
+			History: &model.History{},
+			Length:  1 * time.Second,
+		}
 	})
 
 	return instance

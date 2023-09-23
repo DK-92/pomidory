@@ -82,8 +82,11 @@ func createOrSetStopTimerButton() *fyne.Container {
 	}
 
 	stopTimerButton := widget.NewButton("Stop session", func() {
-		pomodoroTimer.Stop()
 		totalHistory.Add(pomodoroTimer.History, intentionInput.Text)
+		timerState = view.PomodoroState
+
+		pomodoroTimer.Stop()
+		pomodoroTimer.Length = globalSettings.PomodoroLength
 
 		intentionInput.Enable()
 		addStartButtonToContainer()
