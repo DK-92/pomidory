@@ -98,6 +98,7 @@ func createSaveButton() *widget.Button {
 
 		pomodoroTimerDuration, _ := time.ParseDuration(pomodoroTimerLength.Text + "m")
 		globalSettings.PomodoroLength = pomodoroTimerDuration
+		pomodoroTimer.Length = globalSettings.PomodoroLength
 
 		breakTimerDuration, _ := time.ParseDuration(breakTimerLength.Text + "m")
 		globalSettings.BreakLength = breakTimerDuration

@@ -43,8 +43,6 @@ func createToolbar() *widget.Toolbar {
 	return widget.NewToolbar(
 		widget.NewToolbarAction(theme.SettingsIcon(), settings_view.CreateAndShowSettingsView),
 		widget.NewToolbarSpacer(),
-		widget.NewToolbarAction(theme.HistoryIcon(), nil),
-		widget.NewToolbarAction(theme.DocumentSaveIcon(), nil),
 		widget.NewToolbarAction(theme.HelpIcon(), nil),
 	)
 }
