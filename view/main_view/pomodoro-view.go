@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/DK-92/pomidory/view"
 	"github.com/DK-92/pomidory/view/help_view"
+	"github.com/DK-92/pomidory/view/save_view"
 	"github.com/DK-92/pomidory/view/settings_view"
 	"github.com/DK-92/pomidory/view/work_break_view"
 	"time"
@@ -44,7 +45,8 @@ func createToolbar() *widget.Toolbar {
 	return widget.NewToolbar(
 		widget.NewToolbarAction(theme.SettingsIcon(), settings_view.CreateAndShowSettingsView),
 		widget.NewToolbarSpacer(),
-		widget.NewToolbarAction(theme.HelpIcon(), help_view.CreateAndShowSettingsView),
+		widget.NewToolbarAction(theme.DocumentSaveIcon(), save_view.CreateAndShowSaveView),
+		widget.NewToolbarAction(theme.HelpIcon(), help_view.CreateAndShowHelpView),
 	)
 }
 
@@ -81,6 +83,8 @@ func createOrSetStopTimerButton() *fyne.Container {
 
 	stopTimerButton := widget.NewButton("Stop session", func() {
 		pomodoroTimer.Stop()
+		totalHistory.Add(pomodoroTimer.History, intentionInput.Text)
+
 		intentionInput.Enable()
 		addStartButtonToContainer()
 	})
@@ -108,7 +112,7 @@ func startTimer() {
 		case view.WorkBreakState:
 			stateChannel <- view.PomodoroState
 		}
-	})
+	}, timerState)
 
 	// Remove the 3rd item from layout (start timer button)
 	vbox.Objects = vbox.Objects[:buttonPositionInVbox]

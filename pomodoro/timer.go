@@ -2,6 +2,8 @@ package pomodoro
 
 import (
 	"fmt"
+	"github.com/DK-92/pomidory/model"
+	"github.com/DK-92/pomidory/view"
 	"sync"
 	"time"
 )
@@ -16,6 +18,8 @@ type PomodoroTimer struct {
 	running *time.Timer
 	start   time.Time
 	end     time.Time
+
+	History *model.History
 }
 
 func GetInstance() *PomodoroTimer {
@@ -31,10 +35,20 @@ func (t *PomodoroTimer) TimerLength() string {
 	return t.Remainder()
 }
 
-func (t *PomodoroTimer) StartAfter(runAfter func()) {
+func (t *PomodoroTimer) StartAfter(runAfter func(), state int8) {
 	t.running = time.AfterFunc(t.Length, runAfter)
 	t.start = time.Now()
 	t.end = time.Now().Add(t.Length)
+
+	if state == view.PomodoroState {
+		t.History = &model.History{
+			CurrentDate: time.Now().Format(model.DateFormat),
+			Length:      t.Remainder(),
+			Start:       t.start,
+			End:         t.end,
+			Task:        "",
+		}
+	}
 }
 
 func (t *PomodoroTimer) Remainder() string {
@@ -54,4 +68,17 @@ func (t *PomodoroTimer) HasEnded() bool {
 func (t *PomodoroTimer) Stop() {
 	t.end = time.UnixMilli(0)
 	t.running.Stop()
+
+	t.History.End = time.Now()
+	t.History.Length = t.remainderForHistory()
+}
+
+func (t *PomodoroTimer) remainderForHistory() string {
+	difference := t.History.End.Sub(t.History.Start).Round(time.Second)
+
+	total := int(difference.Seconds())
+	minutes := int(total/60) % 60
+	seconds := total % 60
+
+	return fmt.Sprintf("%02d:%02d", minutes, seconds)
 }

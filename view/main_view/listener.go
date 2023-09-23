@@ -12,6 +12,8 @@ func listenOnStateChannel() {
 		switch value {
 		case view.PomodoroState:
 			timerState = view.PomodoroState
+
+			totalHistory.Add(pomodoroTimer.History, intentionInput.Text)
 			pomodoroTimer.Stop()
 
 			sleep()

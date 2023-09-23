@@ -60,7 +60,7 @@ the logo, which is copyrighted to it's original author.
 `
 )
 
-func CreateAndShowSettingsView() {
+func CreateAndShowHelpView() {
 	if isOpen {
 		return
 	}
@@ -71,7 +71,7 @@ func CreateAndShowSettingsView() {
 	vbox := container.New(
 		layout.NewVBoxLayout(),
 		widget.NewRichTextFromMarkdown(helpText),
-		createOKButton(),
+		createButtonContainer(),
 	)
 
 	window.SetContent(vbox)
@@ -82,8 +82,17 @@ func CreateAndShowSettingsView() {
 	window.Show()
 }
 
-func createOKButton() *widget.Button {
-	return widget.NewButton("Ok", func() {
+func createButtonContainer() *fyne.Container {
+	return container.New(
+		layout.NewHBoxLayout(),
+		layout.NewSpacer(),
+		createCloseButton(),
+		layout.NewSpacer(),
+	)
+}
+
+func createCloseButton() *widget.Button {
+	return widget.NewButton("Close", func() {
 		isOpen = false
 		window.Close()
 	})

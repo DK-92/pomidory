@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/DK-92/pomidory/history"
 	"github.com/DK-92/pomidory/pomodoro"
 	"github.com/DK-92/pomidory/settings"
 	"github.com/DK-92/pomidory/view"
@@ -27,12 +28,15 @@ var (
 
 	pomodoroTimer  *pomodoro.PomodoroTimer
 	globalSettings *settings.Settings
-	stateChannel   chan view.StateChannel
+	totalHistory   *history.TotalHistory
+
+	stateChannel chan view.StateChannel
 )
 
 func CreateAndShowMainView() {
 	pomodoroTimer = pomodoro.GetInstance()
 	globalSettings = settings.GetInstance()
+	totalHistory = history.GetInstance()
 
 	stateChannel = make(chan view.StateChannel)
 	go listenOnStateChannel()
