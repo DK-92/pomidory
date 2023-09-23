@@ -1,0 +1,8 @@
+Website = "https://128kb.com"
+
+[Details]
+  Icon = "assets/icon-text.png"
+  Name = "Pomodoro App"
+  ID = "com.128kb"
+  Version = "1.0.0"
+  Build = 3
