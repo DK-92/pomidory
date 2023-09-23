@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/DK-92/pomidory/components"
 	"github.com/DK-92/pomidory/pomodoro"
@@ -24,6 +25,12 @@ var (
 	pomodoroTimerLength *components.NumericalEntry
 	breakTimerLength    *components.NumericalEntry
 	windowClose         *widget.Check
+	themeRadioGroup     *widget.RadioGroup
+)
+
+const (
+	lightTheme = "Light"
+	darkTheme  = "Dark"
 )
 
 func CreateAndShowSettingsView() {
@@ -55,6 +62,8 @@ func createSettingsForm() *fyne.Container {
 		createBreakTimerLengthEntry(),
 		widget.NewLabel("Window closing"),
 		createCloseWindowAutomaticallyCheck(),
+		widget.NewLabel("App theme"),
+		createThemeRadioButtons(),
 	)
 }
 
@@ -76,6 +85,18 @@ func createCloseWindowAutomaticallyCheck() *widget.Check {
 	windowClose = widget.NewCheck("", nil)
 	windowClose.Checked = globalSettings.MinimizeAfterStart
 	return windowClose
+}
+
+func createThemeRadioButtons() *widget.RadioGroup {
+	themeRadioGroup = widget.NewRadioGroup([]string{lightTheme, darkTheme}, nil)
+
+	if globalSettings.IsLightTheme() {
+		themeRadioGroup.Selected = lightTheme
+	} else {
+		themeRadioGroup.Selected = darkTheme
+	}
+
+	return themeRadioGroup
 }
 
 func createButtons() *fyne.Container {
@@ -104,6 +125,15 @@ func createSaveButton() *widget.Button {
 		globalSettings.BreakLength = breakTimerDuration
 
 		globalSettings.MinimizeAfterStart = windowClose.Checked
+
+		app := view.GetAppInstance()
+		if themeRadioGroup.Selected == lightTheme {
+			globalSettings.Theme = settings.LightTheme
+			app.Settings().SetTheme(theme.LightTheme())
+		} else {
+			globalSettings.Theme = settings.DarkTheme
+			app.Settings().SetTheme(theme.DarkTheme())
+		}
 
 		globalSettings.Save()
 		window.Close()

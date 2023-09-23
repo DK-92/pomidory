@@ -8,17 +8,23 @@ import (
 	"time"
 )
 
+const (
+	LightTheme = iota
+	DarkTheme
+)
+
+const filename = "settings.json"
+
 var (
 	once     sync.Once
 	instance *Settings
 )
 
-const filename = "settings.json"
-
 type Settings struct {
 	PomodoroLength     time.Duration `json:"pomodoroLength"`
 	BreakLength        time.Duration `json:"breakLength"`
 	MinimizeAfterStart bool          `json:"minimizeAfterStart"`
+	Theme              int8          `json:"theme"`
 }
 
 func GetInstance() *Settings {
@@ -34,6 +40,7 @@ func (s *Settings) Save() {
 		PomodoroLength:     instance.PomodoroLength / time.Minute,
 		BreakLength:        instance.BreakLength / time.Minute,
 		MinimizeAfterStart: instance.MinimizeAfterStart,
+		Theme:              instance.Theme,
 	}
 
 	buffer, _ := json.Marshal(c)
@@ -44,11 +51,16 @@ func (s *Settings) Save() {
 	}
 }
 
+func (s *Settings) IsLightTheme() bool {
+	return s.Theme == LightTheme
+}
+
 func loadSettings() *Settings {
 	settings := &Settings{
 		PomodoroLength:     25 * time.Minute,
 		BreakLength:        5 * time.Minute,
 		MinimizeAfterStart: true,
+		Theme:              LightTheme,
 	}
 
 	buffer, err := os.ReadFile(filename)

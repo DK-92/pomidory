@@ -4,11 +4,11 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/DK-92/pomidory/pomodoro"
 	"github.com/DK-92/pomidory/settings"
 	"github.com/DK-92/pomidory/view"
-	"image/color"
 )
 
 const windowTitle = "Pomidory"
@@ -51,6 +51,7 @@ func CreateAndShowMainView() {
 		pomodoroWindow.Hide()
 	})
 
+	setInitialTheme()
 	pomodoroWindow.ShowAndRun()
 }
 
@@ -70,9 +71,21 @@ func createSystemTrayMenu() {
 	}
 }
 
+func setInitialTheme() {
+	app := view.GetAppInstance()
+	// TODO: This will have to be refactored in fyne v3
+	if globalSettings.IsLightTheme() {
+		app.Settings().SetTheme(theme.LightTheme())
+	} else {
+		app.Settings().SetTheme(theme.DarkTheme())
+	}
+}
+
 func createOrUpdateTimerText(text string) *canvas.Text {
 	if timerText == nil {
-		timerText = canvas.NewText(text, color.Black)
+		// Interesting case, setting color nil will automatically update color on theme change
+		// Worth keeping in mind when updating fyne
+		timerText = canvas.NewText(text, nil)
 		timerText.Alignment = fyne.TextAlignCenter
 		timerText.TextSize = 40
 	}
