@@ -14,9 +14,9 @@ import (
 	"time"
 )
 
-const windowTitle = "Settings"
-
 const (
+	windowTitle = "Settings"
+
 	lightTheme = "Light"
 	darkTheme  = "Dark"
 )
