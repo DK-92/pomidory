@@ -21,8 +21,6 @@ This application is created to help you with the pomodoro technique. In the late
 
 1980's Francesco Cirillo developed this technique to help him work more efficiently.
 
-This application will try and help you with that.
-
 ## How does the app work?
 On the main screen, you'll notice an input field at the top, a counter below it  
 
