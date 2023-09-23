@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/DK-92/pomidory/view"
+	"github.com/DK-92/pomidory/view/help_view"
 	"github.com/DK-92/pomidory/view/settings_view"
 	"github.com/DK-92/pomidory/view/work_break_view"
 	"time"
@@ -43,7 +44,7 @@ func createToolbar() *widget.Toolbar {
 	return widget.NewToolbar(
 		widget.NewToolbarAction(theme.SettingsIcon(), settings_view.CreateAndShowSettingsView),
 		widget.NewToolbarSpacer(),
-		widget.NewToolbarAction(theme.HelpIcon(), nil),
+		widget.NewToolbarAction(theme.HelpIcon(), help_view.CreateAndShowSettingsView),
 	)
 }
 

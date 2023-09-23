@@ -16,11 +16,17 @@ import (
 
 const windowTitle = "Settings"
 
+const (
+	lightTheme = "Light"
+	darkTheme  = "Dark"
+)
+
 var (
 	pomodoroTimer  *pomodoro.PomodoroTimer
 	globalSettings *settings.Settings
 
 	window fyne.Window
+	isOpen bool
 
 	pomodoroTimerLength *components.NumericalEntry
 	breakTimerLength    *components.NumericalEntry
@@ -28,12 +34,11 @@ var (
 	themeRadioGroup     *widget.RadioGroup
 )
 
-const (
-	lightTheme = "Light"
-	darkTheme  = "Dark"
-)
-
 func CreateAndShowSettingsView() {
+	if isOpen {
+		return
+	}
+
 	pomodoroTimer = pomodoro.GetInstance()
 	globalSettings = settings.GetInstance()
 
@@ -49,7 +54,9 @@ func CreateAndShowSettingsView() {
 
 	window.SetContent(vbox)
 	window.Resize(fyne.Size{Height: 190, Width: 400})
+	window.SetFixedSize(true)
 
+	isOpen = true
 	window.Show()
 }
 
@@ -110,13 +117,13 @@ func createButtons() *fyne.Container {
 
 func createCancelButton() *widget.Button {
 	return widget.NewButton("Cancel", func() {
+		isOpen = false
 		window.Close()
 	})
 }
 
 func createSaveButton() *widget.Button {
 	return widget.NewButton("Save", func() {
-
 		pomodoroTimerDuration, _ := time.ParseDuration(pomodoroTimerLength.Text + "m")
 		globalSettings.PomodoroLength = pomodoroTimerDuration
 		pomodoroTimer.Length = globalSettings.PomodoroLength
@@ -136,6 +143,7 @@ func createSaveButton() *widget.Button {
 		}
 
 		globalSettings.Save()
+		isOpen = false
 		window.Close()
 	})
 }
