@@ -9,7 +9,10 @@ import (
 	"time"
 )
 
-const filenamePrefix = "pomodoro_"
+const (
+	filenamePrefix      = "pomodoro_"
+	bigWorkBreakCounter = 4
+)
 
 var (
 	once     sync.Once
@@ -54,7 +57,7 @@ func (t *TotalHistory) IsBigBreak() bool {
 		return false
 	}
 
-	return ((len(t.history) + 1) % 4) == 0
+	return ((len(t.history) + 1) % bigWorkBreakCounter) == 0
 }
 
 func (t *TotalHistory) toCSV() string {
