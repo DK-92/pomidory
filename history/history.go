@@ -47,6 +47,16 @@ func (t *TotalHistory) Save() {
 	}
 }
 
+func (t *TotalHistory) IsBigBreak() bool {
+	println(len(t.history))
+
+	if len(t.history) == 0 {
+		return false
+	}
+
+	return ((len(t.history) + 1) % 4) == 0
+}
+
 func (t *TotalHistory) toCSV() string {
 	var output string
 

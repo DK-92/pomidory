@@ -1,6 +1,7 @@
 package main_view
 
 import (
+	"github.com/DK-92/pomidory/history"
 	"github.com/DK-92/pomidory/view"
 	"time"
 )
@@ -24,7 +25,12 @@ func listenOnStateChannel() {
 			timerState = view.WorkBreakState
 
 			pomodoroTimer.Stop()
-			pomodoroTimer.Length = globalSettings.BreakLength
+			if history.GetInstance().IsBigBreak() {
+				pomodoroTimer.Length = globalSettings.BigBreakLength
+			} else {
+				pomodoroTimer.Length = globalSettings.SmallBreakLength
+			}
+
 			sleep()
 
 			startTimer()

@@ -13,7 +13,13 @@ const (
 	DarkTheme
 )
 
-const filename = "settings.json"
+const (
+	filename = "settings.json"
+
+	defaultPomodoroLength   = 25 * time.Minute
+	defaultSmallBreakLength = 5 * time.Minute
+	defaultBigBreakLength   = 20 * time.Minute
+)
 
 var (
 	once     sync.Once
@@ -22,7 +28,8 @@ var (
 
 type Settings struct {
 	PomodoroLength     time.Duration `json:"pomodoroLength"`
-	BreakLength        time.Duration `json:"breakLength"`
+	SmallBreakLength   time.Duration `json:"smallBreakLength"`
+	BigBreakLength     time.Duration `json:"bigBreakLength"`
 	MinimizeAfterStart bool          `json:"minimizeAfterStart"`
 	Theme              int8          `json:"theme"`
 }
@@ -38,7 +45,8 @@ func GetInstance() *Settings {
 func (s *Settings) Save() {
 	c := &Settings{
 		PomodoroLength:     instance.PomodoroLength / time.Minute,
-		BreakLength:        instance.BreakLength / time.Minute,
+		SmallBreakLength:   instance.SmallBreakLength / time.Minute,
+		BigBreakLength:     instance.BigBreakLength / time.Minute,
 		MinimizeAfterStart: instance.MinimizeAfterStart,
 		Theme:              instance.Theme,
 	}
@@ -58,7 +66,8 @@ func (s *Settings) IsLightTheme() bool {
 func loadSettings() *Settings {
 	settings := &Settings{
 		PomodoroLength:     25 * time.Minute,
-		BreakLength:        5 * time.Minute,
+		SmallBreakLength:   5 * time.Minute,
+		BigBreakLength:     20 * time.Minute,
 		MinimizeAfterStart: true,
 		Theme:              LightTheme,
 	}
@@ -76,7 +85,28 @@ func loadSettings() *Settings {
 	}
 
 	settings.PomodoroLength = settings.PomodoroLength * time.Minute
-	settings.BreakLength = settings.BreakLength * time.Minute
+	settings.SmallBreakLength = settings.SmallBreakLength * time.Minute
+	settings.BigBreakLength = settings.BigBreakLength * time.Minute
+
+	checkProperValues(settings)
 
 	return settings
+}
+
+func checkProperValues(settings *Settings) {
+	if isOutOfRange(settings.PomodoroLength) {
+		settings.PomodoroLength = defaultPomodoroLength
+	}
+
+	if isOutOfRange(settings.SmallBreakLength) {
+		settings.SmallBreakLength = defaultSmallBreakLength
+	}
+
+	if isOutOfRange(settings.BigBreakLength) {
+		settings.BigBreakLength = defaultBigBreakLength
+	}
+}
+
+func isOutOfRange(value time.Duration) bool {
+	return value.Minutes() < 1 || value.Minutes() > 999
 }

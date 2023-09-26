@@ -28,10 +28,12 @@ var (
 	window fyne.Window
 	isOpen bool
 
-	pomodoroTimerLength *components.NumericalEntry
-	breakTimerLength    *components.NumericalEntry
-	windowClose         *widget.Check
-	themeRadioGroup     *widget.RadioGroup
+	pomodoroTimerLength   *components.NumericalEntry
+	smallBreakTimerLength *components.NumericalEntry
+	bigBreakTimerLength   *components.NumericalEntry
+
+	windowClose     *widget.Check
+	themeRadioGroup *widget.RadioGroup
 )
 
 func CreateAndShowSettingsView() {
@@ -65,8 +67,10 @@ func createSettingsForm() *fyne.Container {
 		layout.NewFormLayout(),
 		widget.NewLabel("Pomodoro length"),
 		createPomodoroTimerLengthEntry(),
-		widget.NewLabel("Break length"),
-		createBreakTimerLengthEntry(),
+		widget.NewLabel("Small break length"),
+		createSmallBreakTimerLengthEntry(),
+		widget.NewLabel("Big break length"),
+		createBigBreakTimerLengthEntry(),
 		widget.NewLabel("Window closing"),
 		createCloseWindowAutomaticallyCheck(),
 		widget.NewLabel("App theme"),
@@ -81,11 +85,18 @@ func createPomodoroTimerLengthEntry() *components.NumericalEntry {
 	return pomodoroTimerLength
 }
 
-func createBreakTimerLengthEntry() *components.NumericalEntry {
-	breakTimerLength = components.NewNumericalEntry()
-	breakTimerLength.SetText(fmt.Sprintf("%.0f", globalSettings.BreakLength.Minutes()))
+func createSmallBreakTimerLengthEntry() *components.NumericalEntry {
+	smallBreakTimerLength = components.NewNumericalEntry()
+	smallBreakTimerLength.SetText(fmt.Sprintf("%.0f", globalSettings.SmallBreakLength.Minutes()))
 
-	return breakTimerLength
+	return smallBreakTimerLength
+}
+
+func createBigBreakTimerLengthEntry() *components.NumericalEntry {
+	bigBreakTimerLength = components.NewNumericalEntry()
+	bigBreakTimerLength.SetText(fmt.Sprintf("%.0f", globalSettings.BigBreakLength.Minutes()))
+
+	return bigBreakTimerLength
 }
 
 func createCloseWindowAutomaticallyCheck() *widget.Check {
@@ -128,8 +139,11 @@ func createSaveButton() *widget.Button {
 		globalSettings.PomodoroLength = pomodoroTimerDuration
 		pomodoroTimer.Length = globalSettings.PomodoroLength
 
-		breakTimerDuration, _ := time.ParseDuration(breakTimerLength.Text + "m")
-		globalSettings.BreakLength = breakTimerDuration
+		smallBreakTimerDuration, _ := time.ParseDuration(smallBreakTimerLength.Text + "m")
+		globalSettings.SmallBreakLength = smallBreakTimerDuration
+
+		bigBreakTimerDuration, _ := time.ParseDuration(bigBreakTimerLength.Text + "m")
+		globalSettings.BigBreakLength = bigBreakTimerDuration
 
 		globalSettings.MinimizeAfterStart = windowClose.Checked
 
