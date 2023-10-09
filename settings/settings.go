@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"os/user"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -14,7 +16,7 @@ const (
 )
 
 const (
-	filename = "settings.json"
+	filename = ".pomidory_settings.json"
 
 	defaultPomodoroLength   = 25 * time.Minute
 	defaultSmallBreakLength = 5 * time.Minute
@@ -53,7 +55,7 @@ func (s *Settings) Save() {
 
 	buffer, _ := json.Marshal(c)
 
-	err := os.WriteFile(filename, buffer, 0644)
+	err := os.WriteFile(fetchHomeDirIfNotWindows()+filename, buffer, 0644)
 	if err != nil {
 		log.Println("Error saving settings file: ", err)
 	}
@@ -72,7 +74,7 @@ func loadSettings() *Settings {
 		Theme:              LightTheme,
 	}
 
-	buffer, err := os.ReadFile(filename)
+	buffer, err := os.ReadFile(fetchHomeDirIfNotWindows() + filename)
 	if err != nil {
 		log.Println("Error opening settings file: ", err)
 		return settings
@@ -109,4 +111,17 @@ func checkProperValues(settings *Settings) {
 
 func isOutOfRange(value time.Duration) bool {
 	return value.Minutes() < 1 || value.Minutes() > 999
+}
+
+func fetchHomeDirIfNotWindows() string {
+	if runtime.GOOS != "darwin" {
+		return ""
+	}
+
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Println("Error fetching current user: ", err)
+	}
+
+	return currentUser.HomeDir + "/"
 }
