@@ -206,12 +206,14 @@ func startTimer() {
 		if state.Load() == statePomodoro {
 			pomodorosFinished.Add(1)
 			slog.Info(windowTitle, "message", "Pomodoro finished", "finishedPomodoros", pomodorosFinished.Load(), "state", state.Load())
+			intentionInput.Enable()
 			addStartButtonToContainer()
 		}
 
 		if state.Load() == stateBreakFinished {
 			state.Store(stateStopped)
 			slog.Info(windowTitle, "message", "Resetting state", "state", state.Load())
+			intentionInput.Enable()
 			addStartButtonToContainer()
 			return
 		}
