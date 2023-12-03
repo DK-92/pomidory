@@ -86,11 +86,11 @@ func loadSettings() *Settings {
 		return settings
 	}
 
-	settings.PomodoroLength = settings.PomodoroLength * time.Second
-	settings.SmallBreakLength = settings.SmallBreakLength * time.Second
-	settings.BigBreakLength = settings.BigBreakLength * time.Second
+	settings.PomodoroLength = settings.PomodoroLength * time.Minute
+	settings.SmallBreakLength = settings.SmallBreakLength * time.Minute
+	settings.BigBreakLength = settings.BigBreakLength * time.Minute
 
-	//checkProperValues(settings)
+	checkProperValues(settings)
 
 	return settings
 }
