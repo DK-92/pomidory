@@ -34,13 +34,13 @@ func GetInstance() *Timer {
 	return instance
 }
 
-func (t *Timer) StartAndRunAfter(runAfter func()) {
+func (t *Timer) StartAndRunAfter(now time.Time, runAfter func()) {
 	t.running = time.AfterFunc(t.Length, func() {
 		runAfter()
 	})
 
-	t.start = time.Now()
-	t.end = time.Now().Add(t.Length)
+	t.start = now
+	t.end = now.Add(t.Length)
 }
 
 func (t *Timer) TimerLength() string {

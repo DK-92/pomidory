@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/DK-92/pomidory/logic/history"
 	"github.com/DK-92/pomidory/view"
 )
 
@@ -31,8 +32,8 @@ func CreateAndShowSaveView() {
 	app := view.GetAppInstance()
 	window = app.NewWindow(windowTitle)
 
-	//totalHistory := history.GetInstance()
-	//totalHistory.Save()
+	totalHistory := history.GetInstance()
+	totalHistory.Save()
 
 	vbox := container.New(
 		layout.NewVBoxLayout(),

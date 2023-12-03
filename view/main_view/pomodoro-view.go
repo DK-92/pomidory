@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/DK-92/pomidory/logic/history"
 	"github.com/DK-92/pomidory/logic/timer"
 	"github.com/DK-92/pomidory/settings"
 	"github.com/DK-92/pomidory/view"
@@ -49,6 +50,7 @@ var (
 	menuRemainder *fyne.MenuItem
 
 	globalSettings *settings.Settings
+	globalHistory  *history.TotalHistory
 	pTimer         *timer.Timer
 
 	pomodorosFinished atomic.Int32
@@ -57,6 +59,7 @@ var (
 
 func CreateAndShowMainView() {
 	globalSettings = settings.GetInstance()
+	globalHistory = history.GetInstance()
 	pTimer = timer.GetInstance()
 
 	app := view.GetAppInstance()
@@ -189,12 +192,15 @@ func addStartButtonToContainer() {
 }
 
 func startTimer() {
+	now := time.Now()
+
 	if state.Load() == stateStopped {
 		state.Store(statePomodoro)
+		globalHistory.Add(history.NewHistory(now, pTimer.Length, intentionInput.Text))
 		slog.Info(windowTitle, "message", "Starting pomodoro", "state", state.Load())
 	}
 
-	pTimer.StartAndRunAfter(func() {
+	pTimer.StartAndRunAfter(now, func() {
 		time.Sleep(120 * time.Millisecond)
 
 		if state.Load() == statePomodoro {
