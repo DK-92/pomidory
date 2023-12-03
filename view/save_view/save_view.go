@@ -5,7 +5,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/DK-92/pomidory/history"
+	"github.com/DK-92/pomidory/logic/history"
 	"github.com/DK-92/pomidory/view"
 )
 

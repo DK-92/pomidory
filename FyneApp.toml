@@ -1,8 +1,8 @@
-Website = "https://128kb.com"
+Website = "https://16kb.org"
 
 [Details]
   Icon = "assets/icon-text.png"
   Name = "Pomodoro App"
-  ID = "com.128kb"
-  Version = "1.0.0"
+  ID = "com.16kb.org"
+  Version = "1.1.0"
   Build = 5

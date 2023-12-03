@@ -2,7 +2,6 @@ package history
 
 import (
 	"fmt"
-	"github.com/DK-92/pomidory/model"
 	"log"
 	"os"
 	"sync"
@@ -12,6 +11,9 @@ import (
 const (
 	filenamePrefix      = "pomodoro_"
 	bigWorkBreakCounter = 4
+
+	dateFormat = "01-02-2006"
+	timeFormat = "15:04"
 )
 
 var (
@@ -21,8 +23,24 @@ var (
 	delimiter = ","
 )
 
+type History struct {
+	CurrentDate string
+	Start       time.Time
+	End         time.Time
+	Task        string
+}
+
+func NewHistory(now time.Time, length time.Duration, task string) *History {
+	return &History{
+		CurrentDate: now.Format(dateFormat),
+		Start:       now,
+		End:         now.Add(length),
+		Task:        task,
+	}
+}
+
 type TotalHistory struct {
-	history     []*model.History
+	history     []*History
 	currentTime int64
 }
 
@@ -36,13 +54,12 @@ func GetInstance() *TotalHistory {
 	return instance
 }
 
-func (t *TotalHistory) Add(newHistory *model.History, task string) {
-	newHistory.Task = task
+func (t *TotalHistory) Add(newHistory *History) {
 	t.history = append(t.history, newHistory)
 }
 
 func (t *TotalHistory) Save() {
-	filename := fmt.Sprintf("%s%s_%d.csv", filenamePrefix, time.Now().Format(model.DateFormat), t.currentTime)
+	filename := fmt.Sprintf("%s%s_%d.csv", filenamePrefix, time.Now().Format(dateFormat), t.currentTime)
 
 	err := os.WriteFile(filename, []byte(t.toCSV()), 0644)
 	if err != nil {
@@ -63,13 +80,12 @@ func (t *TotalHistory) IsBigBreak() bool {
 func (t *TotalHistory) toCSV() string {
 	var output string
 
-	output += "Date" + delimiter + "Length in HH MM" + delimiter + "Start Time" + delimiter + "End Time" + delimiter + "Task" + "\r\n"
+	output += "Date" + delimiter + "Start Time" + delimiter + "End Time" + delimiter + "Task" + "\r\n"
 
 	for _, oldHistory := range t.history {
 		output += oldHistory.CurrentDate + delimiter
-		output += oldHistory.Length + delimiter
-		output += oldHistory.Start.Format(model.TimeFormat) + delimiter
-		output += oldHistory.End.Format(model.TimeFormat) + delimiter
+		output += oldHistory.Start.Format(timeFormat) + delimiter
+		output += oldHistory.End.Format(timeFormat) + delimiter
 		output += oldHistory.Task + "\r\n"
 	}
 

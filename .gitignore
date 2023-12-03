@@ -3,6 +3,6 @@
 go.work
 
 .idea
-settings.json
+.pomidory_settings.json
 
 *.csv
