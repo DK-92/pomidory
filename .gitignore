@@ -6,3 +6,4 @@ go.work
 settings.json
 
 *.csv
+.pomidory_settings.json
