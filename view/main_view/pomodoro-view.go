@@ -3,24 +3,91 @@ package main_view
 import (
 	"fmt"
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/DK-92/pomidory/logic/timer"
+	"github.com/DK-92/pomidory/settings"
 	"github.com/DK-92/pomidory/view"
 	"github.com/DK-92/pomidory/view/help_view"
 	"github.com/DK-92/pomidory/view/save_view"
 	"github.com/DK-92/pomidory/view/settings_view"
-	"github.com/DK-92/pomidory/view/work_break_view"
 	"time"
 )
 
 const (
+	windowTitle = "Pomidory"
+
 	hideWindowAfterStartTimerSeconds = 2 * time.Second
 	buttonPositionInVbox             = 3
 )
 
-var timerState int8
+var (
+	pomodoroWindow fyne.Window
+
+	timerText                 *canvas.Text
+	intentionInput            *widget.Entry
+	startTimerButtonContainer *fyne.Container
+	stopTimerButtonContainer  *fyne.Container
+	vbox                      *fyne.Container
+
+	menu          *fyne.Menu
+	menuRemainder *fyne.MenuItem
+
+	globalSettings *settings.Settings
+	pTimer         *timer.Timer
+)
+
+func CreateAndShowMainView() {
+	globalSettings = settings.GetInstance()
+	pTimer = timer.GetInstance()
+
+	app := view.GetAppInstance()
+	pomodoroWindow = app.NewWindow(windowTitle)
+	createSystemTrayMenu()
+	createInitialPomodoroView()
+
+	pomodoroWindow.SetContent(vbox)
+	pomodoroWindow.Resize(fyne.NewSize(120, 120))
+	pomodoroWindow.SetFixedSize(true)
+	pomodoroWindow.CenterOnScreen()
+
+	pomodoroWindow.SetCloseIntercept(func() {
+		pomodoroWindow.Hide()
+	})
+
+	setInitialTheme()
+	pomodoroWindow.ShowAndRun()
+}
+
+func createSystemTrayMenu() {
+	app := view.GetAppInstance()
+	menuRemainder = fyne.NewMenuItem("Timer not started", nil)
+
+	if desk, isDesktop := app.(desktop.App); isDesktop {
+		menu = fyne.NewMenu("Pomidory",
+			fyne.NewMenuItem("Show", func() {
+				pomodoroWindow.Show()
+			}),
+			fyne.NewMenuItemSeparator(),
+			menuRemainder,
+		)
+		desk.SetSystemTrayMenu(menu)
+	}
+}
+
+func setInitialTheme() {
+	app := view.GetAppInstance()
+	// TODO: This will have to be refactored in fyne v3
+	if globalSettings.IsLightTheme() {
+		app.Settings().SetTheme(theme.LightTheme())
+	} else {
+		app.Settings().SetTheme(theme.DarkTheme())
+	}
+}
 
 func createInitialPomodoroView() {
 	if vbox == nil {
@@ -28,13 +95,13 @@ func createInitialPomodoroView() {
 			layout.NewVBoxLayout(),
 			createToolbar(),
 			createOrSetIntentionInput(),
-			createOrUpdateTimerText(pomodoroTimer.TimerLength()),
+			createOrUpdateTimerText("0:00"),
 			createOrSetStartTimerButton(),
 		)
 	}
 
-	pomodoroTimer.Length = globalSettings.PomodoroLength
-	createOrUpdateTimerText(pomodoroTimer.TimerLength())
+	//pomodoroTimer.Length = globalSettings.PomodoroLength
+	createOrUpdateTimerText("2:00")
 
 	intentionInput.Text = ""
 	intentionInput.Enable()
@@ -82,11 +149,8 @@ func createOrSetStopTimerButton() *fyne.Container {
 	}
 
 	stopTimerButton := widget.NewButton("Stop session", func() {
-		totalHistory.Add(pomodoroTimer.History, intentionInput.Text)
-		timerState = view.PomodoroState
-
-		pomodoroTimer.Stop()
-		pomodoroTimer.Length = globalSettings.PomodoroLength
+		pTimer.Stop()
+		//pomodoroTimer.Length = globalSettings.PomodoroLength
 
 		intentionInput.Enable()
 		addStartButtonToContainer()
@@ -108,31 +172,28 @@ func addStartButtonToContainer() {
 }
 
 func startTimer() {
-	pomodoroTimer.StartAfter(func() {
-		switch timerState {
-		case view.PomodoroState:
-			work_break_view.CreateAndShowWorkBreakView(stateChannel)
-		case view.WorkBreakState:
-			stateChannel <- view.PomodoroState
-		}
-	}, timerState)
+	pTimer.StartAndRunAfter(func() {
+		println("ended timer")
+		addStartButtonToContainer()
+	})
 
 	// Remove the 3rd item from layout (start timer button)
 	vbox.Objects = vbox.Objects[:buttonPositionInVbox]
 	vbox.Add(createOrSetStopTimerButton())
 
 	intentionInput.Disable()
-	createOrUpdateTimerText(pomodoroTimer.Remainder())
+	createOrUpdateTimerText(pTimer.Remainder())
 
 	// Update the time element on the UI
 	go func() {
 		for range time.Tick(60 * time.Millisecond) {
-			if pomodoroTimer.HasEnded() {
-				addStartButtonToContainer()
+			if pTimer.HasEnded() {
+				//addStartButtonToContainer()
+				println("ended loop")
 				return
 			}
 
-			remainder := pomodoroTimer.Remainder()
+			remainder := pTimer.Remainder()
 			createOrUpdateTimerText(remainder)
 			updateMenuItemTimerText(fmt.Sprintf("Time left: %s", remainder))
 		}
@@ -145,4 +206,22 @@ func startTimer() {
 			pomodoroWindow.Hide()
 		}()
 	}
+}
+
+func createOrUpdateTimerText(text string) *canvas.Text {
+	if timerText == nil {
+		// Interesting case, setting color nil will automatically update color on theme change
+		// Worth keeping in mind when updating fyne
+		timerText = canvas.NewText(text, nil)
+		timerText.Alignment = fyne.TextAlignCenter
+		timerText.TextSize = 40
+	}
+	timerText.Text = text
+	timerText.Refresh()
+	return timerText
+}
+
+func updateMenuItemTimerText(text string) {
+	menuRemainder.Label = text
+	menu.Refresh()
 }

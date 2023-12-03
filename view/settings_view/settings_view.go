@@ -8,7 +8,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/DK-92/pomidory/components"
-	"github.com/DK-92/pomidory/pomodoro"
 	"github.com/DK-92/pomidory/settings"
 	"github.com/DK-92/pomidory/view"
 	"time"
@@ -22,7 +21,7 @@ const (
 )
 
 var (
-	pomodoroTimer  *pomodoro.PomodoroTimer
+	//pomodoroTimer  *pomodoro.PomodoroTimer
 	globalSettings *settings.Settings
 
 	window fyne.Window
@@ -41,7 +40,7 @@ func CreateAndShowSettingsView() {
 		return
 	}
 
-	pomodoroTimer = pomodoro.GetInstance()
+	//pomodoroTimer = pomodoro.GetInstance()
 	globalSettings = settings.GetInstance()
 
 	app := view.GetAppInstance()
@@ -137,7 +136,7 @@ func createSaveButton() *widget.Button {
 	return widget.NewButton("Save", func() {
 		pomodoroTimerDuration, _ := time.ParseDuration(pomodoroTimerLength.Text + "m")
 		globalSettings.PomodoroLength = pomodoroTimerDuration
-		pomodoroTimer.Length = globalSettings.PomodoroLength
+		//pomodoroTimer.Length = globalSettings.PomodoroLength
 
 		smallBreakTimerDuration, _ := time.ParseDuration(smallBreakTimerLength.Text + "m")
 		globalSettings.SmallBreakLength = smallBreakTimerDuration
