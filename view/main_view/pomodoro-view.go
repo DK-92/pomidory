@@ -17,6 +17,7 @@ import (
 	"github.com/DK-92/pomidory/view/settings_view"
 	"github.com/DK-92/pomidory/view/work_break_view"
 	"log/slog"
+	"sync/atomic"
 	"time"
 )
 
@@ -26,6 +27,13 @@ const (
 	hideWindowAfterStartTimerSeconds = 2 * time.Second
 	buttonPositionInVbox             = 3
 	bigBreak                         = 4
+)
+
+const (
+	stateStopped = iota
+	statePomodoro
+	stateBreak
+	stateBreakFinished
 )
 
 var (
@@ -42,6 +50,9 @@ var (
 
 	globalSettings *settings.Settings
 	pTimer         *timer.Timer
+
+	pomodorosFinished atomic.Int32
+	state             atomic.Int32
 )
 
 func CreateAndShowMainView() {
@@ -104,7 +115,7 @@ func createInitialPomodoroView() {
 	}
 
 	// TODO: Uncomment below after work is done
-	//pTimer.Length = globalSettings.PomodoroLength
+	pTimer.Length = globalSettings.PomodoroLength
 	createOrUpdateTimerText(pTimer.TimerLength())
 
 	intentionInput.Text = ""
@@ -154,6 +165,8 @@ func createOrSetStopTimerButton() *fyne.Container {
 
 	stopTimerButton := widget.NewButton("Stop session", func() {
 		pTimer.Stop()
+		pTimer.Length = globalSettings.PomodoroLength
+		state.Store(stateStopped)
 
 		intentionInput.Enable()
 		addStartButtonToContainer()
@@ -172,20 +185,49 @@ func createOrSetStopTimerButton() *fyne.Container {
 func addStartButtonToContainer() {
 	vbox.Objects = vbox.Objects[:buttonPositionInVbox]
 	vbox.Add(startTimerButtonContainer)
+	pTimer.Length = globalSettings.PomodoroLength
 }
 
 func startTimer() {
-	pTimer.StartAndRunAfter(func() {
-		slog.Info(windowTitle, "message", "Pomodoro finished", "finishedPomodoros", pTimer.GetPomodorosFinished())
-		addStartButtonToContainer()
+	if state.Load() == stateStopped {
+		state.Store(statePomodoro)
+		slog.Info(windowTitle, "message", "Starting pomodoro", "state", state.Load())
+	}
 
-		if pTimer.GetPomodorosFinished()%bigBreak == 0 {
+	pTimer.StartAndRunAfter(func() {
+		time.Sleep(120 * time.Millisecond)
+
+		if state.Load() == statePomodoro {
+			pomodorosFinished.Add(1)
+			slog.Info(windowTitle, "message", "Pomodoro finished", "finishedPomodoros", pomodorosFinished.Load(), "state", state.Load())
+			addStartButtonToContainer()
+		}
+
+		if state.Load() == stateBreakFinished {
+			state.Store(stateStopped)
+			slog.Info(windowTitle, "message", "Resetting state", "state", state.Load())
+			addStartButtonToContainer()
+			return
+		}
+
+		if pomodorosFinished.Load()%bigBreak == 0 {
 			slog.Info(windowTitle, "message", "Spawing work break view", "breakType", "LongBreak")
 			work_break_view.CreateAndShowWorkBreakView(work_break_view.LongBreak)
-			pTimer.ResetPomodoroCounter()
+			pomodorosFinished.Store(0)
+
+			pTimer.Length = globalSettings.BigBreakLength
+			state.Store(stateBreak)
 		} else {
 			slog.Info(windowTitle, "message", "Spawing work break view", "breakType", "ShortBreak")
 			work_break_view.CreateAndShowWorkBreakView(work_break_view.ShortBreak)
+
+			pTimer.Length = globalSettings.SmallBreakLength
+			state.Store(stateBreak)
+		}
+
+		if state.Load() == stateBreak {
+			slog.Info(windowTitle, "message", "Starting work break timer", "state", state.Load())
+			startTimer()
 		}
 	})
 
@@ -200,7 +242,11 @@ func startTimer() {
 	go func() {
 		for range time.Tick(60 * time.Millisecond) {
 			if pTimer.HasEnded() {
-				slog.Info(windowTitle, "message", "Timer text loop stopped")
+				if state.Load() == stateBreak {
+					state.Store(stateBreakFinished)
+				}
+
+				slog.Info(windowTitle, "message", "Timer text loop stopped", "state", state.Load())
 				return
 			}
 

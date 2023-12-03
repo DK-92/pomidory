@@ -3,7 +3,6 @@ package timer
 import (
 	"fmt"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -23,8 +22,6 @@ type Timer struct {
 	running *time.Timer
 	start   time.Time
 	end     time.Time
-
-	pomodorosFinished atomic.Int32
 }
 
 func GetInstance() *Timer {
@@ -39,7 +36,6 @@ func GetInstance() *Timer {
 
 func (t *Timer) StartAndRunAfter(runAfter func()) {
 	t.running = time.AfterFunc(t.Length, func() {
-		t.pomodorosFinished.Add(1)
 		runAfter()
 	})
 
@@ -69,12 +65,4 @@ func (t *Timer) HasEnded() bool {
 func (t *Timer) Stop() {
 	t.end = time.UnixMilli(0)
 	t.running.Stop()
-}
-
-func (t *Timer) GetPomodorosFinished() int32 {
-	return t.pomodorosFinished.Load()
-}
-
-func (t *Timer) ResetPomodoroCounter() {
-	t.pomodorosFinished.Store(0)
 }
