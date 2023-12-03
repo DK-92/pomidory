@@ -6,25 +6,32 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/DK-92/pomidory/history"
 	"github.com/DK-92/pomidory/settings"
 	"github.com/DK-92/pomidory/view"
 	"time"
 )
 
-const windowTitle = "Work break"
+const (
+	windowTitle = "Work break"
+
+	ShortBreak = iota
+	LongBreak
+)
 
 var (
 	globalSettings *settings.Settings
-	totalHistory   *history.TotalHistory
+	//totalHistory   *history.TotalHistory
+
+	breakType int
 )
 
-func CreateAndShowWorkBreakView(channel chan<- view.StateChannel) {
+func CreateAndShowWorkBreakView(bType int) {
 	app := view.GetAppInstance()
 	window := app.NewWindow(windowTitle)
 
 	globalSettings = settings.GetInstance()
-	totalHistory = history.GetInstance()
+	//totalHistory = history.GetInstance()
+	breakType = bType
 
 	vbox := container.New(
 		layout.NewVBoxLayout(),
@@ -36,8 +43,6 @@ func CreateAndShowWorkBreakView(channel chan<- view.StateChannel) {
 	window.SetFixedSize(true)
 	window.CenterOnScreen()
 	window.Show()
-
-	channel <- view.WorkBreakState
 }
 
 func createButtons(window fyne.Window) *fyne.Container {
@@ -70,7 +75,7 @@ Congratulations, %d minutes has passed!
 }
 
 func createBreakText() string {
-	if totalHistory.IsBigBreak() {
+	if breakType == LongBreak {
 		return fmt.Sprintf("It's time for a longer %d minute break.", globalSettings.BigBreakLength/time.Minute)
 	}
 

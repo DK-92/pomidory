@@ -15,6 +15,8 @@ import (
 	"github.com/DK-92/pomidory/view/help_view"
 	"github.com/DK-92/pomidory/view/save_view"
 	"github.com/DK-92/pomidory/view/settings_view"
+	"github.com/DK-92/pomidory/view/work_break_view"
+	"log/slog"
 	"time"
 )
 
@@ -23,6 +25,7 @@ const (
 
 	hideWindowAfterStartTimerSeconds = 2 * time.Second
 	buttonPositionInVbox             = 3
+	bigBreak                         = 4
 )
 
 var (
@@ -95,13 +98,14 @@ func createInitialPomodoroView() {
 			layout.NewVBoxLayout(),
 			createToolbar(),
 			createOrSetIntentionInput(),
-			createOrUpdateTimerText("0:00"),
+			createOrUpdateTimerText(""),
 			createOrSetStartTimerButton(),
 		)
 	}
 
-	//pomodoroTimer.Length = globalSettings.PomodoroLength
-	createOrUpdateTimerText("2:00")
+	// TODO: Uncomment below after work is done
+	//pTimer.Length = globalSettings.PomodoroLength
+	createOrUpdateTimerText(pTimer.TimerLength())
 
 	intentionInput.Text = ""
 	intentionInput.Enable()
@@ -150,7 +154,6 @@ func createOrSetStopTimerButton() *fyne.Container {
 
 	stopTimerButton := widget.NewButton("Stop session", func() {
 		pTimer.Stop()
-		//pomodoroTimer.Length = globalSettings.PomodoroLength
 
 		intentionInput.Enable()
 		addStartButtonToContainer()
@@ -173,8 +176,17 @@ func addStartButtonToContainer() {
 
 func startTimer() {
 	pTimer.StartAndRunAfter(func() {
-		println("ended timer")
+		slog.Info(windowTitle, "message", "Pomodoro finished", "finishedPomodoros", pTimer.GetPomodorosFinished())
 		addStartButtonToContainer()
+
+		if pTimer.GetPomodorosFinished()%bigBreak == 0 {
+			slog.Info(windowTitle, "message", "Spawing work break view", "breakType", "LongBreak")
+			work_break_view.CreateAndShowWorkBreakView(work_break_view.LongBreak)
+			pTimer.ResetPomodoroCounter()
+		} else {
+			slog.Info(windowTitle, "message", "Spawing work break view", "breakType", "ShortBreak")
+			work_break_view.CreateAndShowWorkBreakView(work_break_view.ShortBreak)
+		}
 	})
 
 	// Remove the 3rd item from layout (start timer button)
@@ -188,8 +200,7 @@ func startTimer() {
 	go func() {
 		for range time.Tick(60 * time.Millisecond) {
 			if pTimer.HasEnded() {
-				//addStartButtonToContainer()
-				println("ended loop")
+				slog.Info(windowTitle, "message", "Timer text loop stopped")
 				return
 			}
 
@@ -204,6 +215,7 @@ func startTimer() {
 		go func() {
 			time.Sleep(hideWindowAfterStartTimerSeconds)
 			pomodoroWindow.Hide()
+			slog.Info(windowTitle, "message", "MinimizeAfterStart")
 		}()
 	}
 }
@@ -216,8 +228,12 @@ func createOrUpdateTimerText(text string) *canvas.Text {
 		timerText.Alignment = fyne.TextAlignCenter
 		timerText.TextSize = 40
 	}
-	timerText.Text = text
-	timerText.Refresh()
+
+	if text != "" {
+		timerText.Text = text
+		timerText.Refresh()
+	}
+
 	return timerText
 }
 
