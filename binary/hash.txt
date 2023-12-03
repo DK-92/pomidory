@@ -1,1 +1,1 @@
-windows/pomidory.exe		cab5f9f3cb73129a49e45b8da40bf992536ab78a207a4d2178c3377312466144 *pomidory.exe
+windows/pomidory.exe		cab5f9f3cb73129a49e45b8da40bf992536ab78a207a4d2178c3377312466144
