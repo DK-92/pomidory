@@ -20,7 +20,6 @@ const (
 
 var (
 	globalSettings *settings.Settings
-	//totalHistory   *history.TotalHistory
 
 	breakType int
 )
@@ -30,7 +29,6 @@ func CreateAndShowWorkBreakView(bType int) {
 	window := app.NewWindow(windowTitle)
 
 	globalSettings = settings.GetInstance()
-	//totalHistory = history.GetInstance()
 	breakType = bType
 
 	vbox := container.New(
