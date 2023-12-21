@@ -6,3 +6,4 @@ go.work
 .pomidory_settings.json
 
 *.csv
+.DS_Store

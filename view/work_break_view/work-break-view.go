@@ -40,6 +40,7 @@ func CreateAndShowWorkBreakView(bType int) {
 	window.SetContent(vbox)
 	window.SetFixedSize(true)
 	window.CenterOnScreen()
+	window.RequestFocus()
 	window.Show()
 }
 

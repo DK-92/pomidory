@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	LightTheme = iota
+	OSDefault = iota
+	LightTheme
 	DarkTheme
 )
 
@@ -61,17 +62,13 @@ func (s *Settings) Save() {
 	}
 }
 
-func (s *Settings) IsLightTheme() bool {
-	return s.Theme == LightTheme
-}
-
 func loadSettings() *Settings {
 	settings := &Settings{
 		PomodoroLength:     25 * time.Minute,
 		SmallBreakLength:   5 * time.Minute,
 		BigBreakLength:     20 * time.Minute,
 		MinimizeAfterStart: true,
-		Theme:              LightTheme,
+		Theme:              OSDefault,
 	}
 
 	buffer, err := os.ReadFile(fetchHomeDirIfNotWindows() + filename)

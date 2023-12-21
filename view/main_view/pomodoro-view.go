@@ -97,13 +97,19 @@ func createSystemTrayMenu() {
 }
 
 func setInitialTheme() {
+	if globalSettings.Theme == settings.OSDefault {
+		// Don't do anything here, Fyne will use whatever the OS preference is with regard to dark/light mode
+		return
+	}
+
 	app := view.GetAppInstance()
 	// TODO: This will have to be refactored in fyne v3
-	if globalSettings.IsLightTheme() {
+	if globalSettings.Theme == settings.LightTheme {
 		app.Settings().SetTheme(theme.LightTheme())
-	} else {
-		app.Settings().SetTheme(theme.DarkTheme())
+		return
 	}
+
+	app.Settings().SetTheme(theme.DarkTheme())
 }
 
 func createInitialPomodoroView() {
@@ -219,6 +225,8 @@ func startTimer() {
 
 		if pomodorosFinished.Load()%bigBreak == 0 {
 			slog.Info(windowTitle, "message", "Spawing work break view", "breakType", "LongBreak")
+			pomodoroWindow.Show()
+			pomodoroWindow.RequestFocus()
 			work_break_view.CreateAndShowWorkBreakView(work_break_view.LongBreak)
 			pomodorosFinished.Store(0)
 
@@ -226,6 +234,8 @@ func startTimer() {
 			state.Store(stateBreak)
 		} else {
 			slog.Info(windowTitle, "message", "Spawing work break view", "breakType", "ShortBreak")
+			pomodoroWindow.Show()
+			pomodoroWindow.RequestFocus()
 			work_break_view.CreateAndShowWorkBreakView(work_break_view.ShortBreak)
 
 			pTimer.Length = globalSettings.SmallBreakLength
@@ -264,7 +274,7 @@ func startTimer() {
 	}()
 
 	// Close after 2 seconds, so the user sees the timer has started
-	if globalSettings.MinimizeAfterStart {
+	if globalSettings.MinimizeAfterStart && state.Load() != stateBreak {
 		go func() {
 			time.Sleep(hideWindowAfterStartTimerSeconds)
 			pomodoroWindow.Hide()
@@ -282,7 +292,7 @@ func createOrUpdateTimerText(text string) *canvas.Text {
 		timerText.TextSize = 40
 	}
 
-	if text != "" {
+	if text != "" && timerText.Text != text {
 		timerText.Text = text
 		timerText.Refresh()
 	}
@@ -291,6 +301,10 @@ func createOrUpdateTimerText(text string) *canvas.Text {
 }
 
 func updateMenuItemTimerText(text string) {
+	if menuRemainder.Label == text {
+		return
+	}
+
 	menuRemainder.Label = text
 	menu.Refresh()
 }

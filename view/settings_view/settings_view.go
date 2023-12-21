@@ -5,7 +5,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/DK-92/pomidory/components"
 	"github.com/DK-92/pomidory/logic/timer"
@@ -17,6 +16,7 @@ import (
 const (
 	windowTitle = "Settings"
 
+	osDefault  = "OS Default"
 	lightTheme = "Light"
 	darkTheme  = "Dark"
 )
@@ -73,7 +73,7 @@ func createSettingsForm() *fyne.Container {
 		createBigBreakTimerLengthEntry(),
 		widget.NewLabel("Window closing"),
 		createCloseWindowAutomaticallyCheck(),
-		widget.NewLabel("App theme"),
+		widget.NewLabel("App theme (restart needed)"),
 		createThemeRadioButtons(),
 	)
 }
@@ -106,11 +106,14 @@ func createCloseWindowAutomaticallyCheck() *widget.Check {
 }
 
 func createThemeRadioButtons() *widget.RadioGroup {
-	themeRadioGroup = widget.NewRadioGroup([]string{lightTheme, darkTheme}, nil)
+	themeRadioGroup = widget.NewRadioGroup([]string{osDefault, lightTheme, darkTheme}, nil)
 
-	if globalSettings.IsLightTheme() {
+	switch globalSettings.Theme {
+	case settings.OSDefault:
+		themeRadioGroup.Selected = osDefault
+	case settings.LightTheme:
 		themeRadioGroup.Selected = lightTheme
-	} else {
+	case settings.DarkTheme:
 		themeRadioGroup.Selected = darkTheme
 	}
 
@@ -147,13 +150,13 @@ func createSaveButton() *widget.Button {
 
 		globalSettings.MinimizeAfterStart = windowClose.Checked
 
-		app := view.GetAppInstance()
-		if themeRadioGroup.Selected == lightTheme {
+		switch themeRadioGroup.Selected {
+		case osDefault:
+			globalSettings.Theme = settings.OSDefault
+		case lightTheme:
 			globalSettings.Theme = settings.LightTheme
-			app.Settings().SetTheme(theme.LightTheme())
-		} else {
+		case darkTheme:
 			globalSettings.Theme = settings.DarkTheme
-			app.Settings().SetTheme(theme.DarkTheme())
 		}
 
 		globalSettings.Save()
