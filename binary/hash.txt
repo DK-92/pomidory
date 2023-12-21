@@ -1,1 +1,5 @@
-windows/pomidory.exe		cab5f9f3cb73129a49e45b8da40bf992536ab78a207a4d2178c3377312466144
+windows/pomidory.exe                            cab5f9f3cb73129a49e45b8da40bf992536ab78a207a4d2178c3377312466144
+
+Pomodoro App.app/Contents/Info.plist            eb67cf411ef412abdab196591dd22d03611ce44ef9ed64e896c62998f136744f
+Pomodoro App.app/Contents/MacOS/pomidory        87bda327ac5219f7b9c49fa6b36e939f246e68d4061ea182ddd5e07f92120677
+Pomodoro App.app/Contents/Resources/icon.icns   a8ac4db96bfcae475b863ca2e3849326c26d604e695d6d7baae8983150d44130
